@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('person_password');
             $table->string('person_address');
             $table->foreignId('city_id')->constrained()->onDelete('cascade');
-            $table->foreignId('role_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
