@@ -20,7 +20,7 @@ class DegreeController extends Controller
             }
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error interno del servidor.',
+                'error' => 'Error interno del servidor (Degree).',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -38,14 +38,14 @@ class DegreeController extends Controller
 
             if (!$degree) {
                 return response()->json([
-                    'error' => 'El recurso solicitado no existe.'
+                    'error' => 'El recurso solicitado no existe (Degree).'
                 ], 404);
+            } else {
+                return response()->json($degree, 201);
             }
-
-            return response()->json($degree, 201);
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error interno del servidor.',
+                'error' => 'Error interno del servidor (Degree).',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -66,20 +66,20 @@ class DegreeController extends Controller
         try {
             $degree = Degree::find($id);
 
-            if (!is_int($id)) {
+            if (!is_numeric($id)) {
                 return response()->json([
-                    'error' => 'La solicitud contiene errores.',
+                    'error' => 'La solicitud contiene errores (Degree).',
                 ], 400);
             } else if (!$degree) {
-                return response()->json('El recurso solicitado no existe.', 404);
+                return response()->json('El recurso solicitado no existe (Degree).', 404);
+            } else {
+                $degree->degree_name = $request->degree_name;
+                $degree->save();
+                return response()->json($degree, 200);
             }
-
-            $degree->degree_name = $request->degree_name;
-            $degree->save();
-            return response()->json($degree);
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error interno del servidor.',
+                'error' => 'Error interno del servidor (Degree).',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -90,20 +90,20 @@ class DegreeController extends Controller
         try {
             $degree = Degree::destroy($id);
 
-            if (!is_int($id)) {
+            if (!is_numeric($id)) {
                 return response()->json([
-                    'error' => 'La solicitud contiene errores.'
+                    'error' => 'La solicitud contiene errores (Degree).'
                 ], 400);
             } else if (!$degree) {
                 return response()->json([
-                    'error' => 'El recurso solicitado no existe.'
+                    'error' => 'El recurso solicitado no existe (Degree).'
                 ], 404);
+            } else {
+                return response()->json($degree, 204);
             }
-
-            return response()->json($degree, 204);
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error interno del servidor.',
+                'error' => 'Error interno del servidor (Degree).',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -115,7 +115,7 @@ class DegreeController extends Controller
             return Degree::with('subject')->get();
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error interno del servidor.',
+                'error' => 'Error interno del servidor (Degree).',
                 'message' => $e->getMessage()
             ], 500);
         }

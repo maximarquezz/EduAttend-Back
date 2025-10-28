@@ -7,9 +7,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Assignment extends Model
 {
-    public function Person(): BelongsTo
+
+    protected $fillable = [
+        'user_id',
+        'mid_comissions_subjects_id',
+        'assign_type'
+    ];
+
+    public function User(): BelongsTo
     {
-        return $this->belongsTo(Person::class);
+        return $this->belongsTo(User::class);
     }
 
     public function MidComissionSubject(): BelongsTo

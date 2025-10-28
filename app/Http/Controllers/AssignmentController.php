@@ -7,60 +7,102 @@ use Illuminate\Http\Request;
 
 class AssignmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $assignments = Assignment::all();
-        return response()->json($assignments);
+        try {
+            $assignments = Assignment::all();
+            if ($assignments->isEmpty()) {
+                return response()->json('Aún no hay asignaciones.');
+            } else {
+                return response()->json($assignments, 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Assignment).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        try {
+            $assignment = Assignment::create($request->all());
+
+            if (!$assignment) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (Assignment).'
+                ], 404);
+            } else {
+                return response()->json($assignment, 201);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Assignment).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Assignment $assignment)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Assignment $assignment)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Assignment $assignment)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $assignment = Assignment::find($id);
+
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (Assignment).',
+                ], 400);
+            } else if (!$assignment) {
+                return response()->json('El recurso solicitado no existe (Assignment).', 404);
+            } else {
+                $assignment->update($request->all());
+                return response()->json($assignment, 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Assignment).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Assignment $assignment)
+    public function destroy($id)
     {
-        //
+        try {
+            $assignment = Assignment::destroy($id);
+
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (Assignment).'
+                ], 400);
+            } else if (!$assignment) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (Assignment).'
+                ], 404);
+            } else {
+                return response()->json($assignment, 204);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Assignment).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

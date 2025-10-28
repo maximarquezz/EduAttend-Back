@@ -9,7 +9,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Comission extends Model
 {
     protected $fillable = [
-        'comission_name'
+        'comission_name',
+        'comission_year',
+        'degree_id'
     ];
 
     public function Degree(): BelongsTo

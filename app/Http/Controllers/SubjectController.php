@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
-use App\Models\Degree;
 use Illuminate\Http\Request;
 
 class SubjectController extends Controller
@@ -19,7 +18,7 @@ class SubjectController extends Controller
             }
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error interno del servidor.',
+                'error' => 'Error interno del servidor (Subject).',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -37,14 +36,14 @@ class SubjectController extends Controller
 
             if (!$subject) {
                 return response()->json([
-                    'error' => 'El recurso solicitado no existe.'
+                    'error' => 'El recurso solicitado no existe (Subject).'
                 ], 404);
+            } else {
+                return response()->json($subject, 201);
             }
-
-            return response()->json($subject, 201);
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error interno del servidor.',
+                'error' => 'Error interno del servidor (Subject).',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -65,19 +64,22 @@ class SubjectController extends Controller
         try {
             $subject = Subject::find($id);
 
-            if (!is_int($id)) {
+            if (!is_numeric($id)) {
                 return response()->json([
-                    'error' => 'La solicitud contiene errores.',
+                    'error' => 'La solicitud contiene errores (Subject).',
                 ], 400);
             } else if (!$subject) {
-                return response()->json('El recurso solicitado no existe', 404);
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (Subject).'
+                ], 404);
+            } else {
+                $subject->update($request->all());
+                $subject->save();
+                return response()->json($subject, 200);
             }
-            $subject->update($request->all());
-            $subject->save();
-            return response()->json($subject);
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error interno del servidor.',
+                'error' => 'Error interno del servidor (Subject).',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -88,20 +90,20 @@ class SubjectController extends Controller
         try {
             $subject = Subject::destroy($id);
 
-            if (!is_int($id)) {
+            if (!is_numeric($id)) {
                 return response()->json([
-                    'error' => 'La solicitud contiene errores.'
+                    'error' => 'La solicitud contiene errores (Subject).'
                 ], 400);
             } else if (!$subject) {
                 return response()->json([
-                    'error' => 'El recurso solicitado no existe.'
+                    'error' => 'El recurso solicitado no existe (Subject).'
                 ], 404);
+            } else {
+                return response()->json($subject, 204);
             }
-
-            return response()->json($subject, 204);
         } catch (\Throwable $e) {
             return response()->json([
-                'error' => 'Error intern del servidor.',
+                'error' => 'Error interno del servidor (Subject).',
                 'message' => $e->getMessage()
             ], 500);
         }

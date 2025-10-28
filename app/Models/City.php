@@ -8,9 +8,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class City extends Model
 {
-    public function Person(): HasMany
+    protected $fillable = [
+        'city_name',
+        'city_postalcode',
+        'province_id'
+    ];
+
+    public function User(): HasMany
     {
-        return $this->hasMany(Person::class);
+        return $this->hasMany(User::class);
     }
 
     public function Province(): BelongsTo

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\MidComissionSubject;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -15,14 +16,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
+        /*User::factory()->create([
             'name' => 'Test User',
             'email' => 'test@example.com',
-        ]);
+        ]);*/
 
         $this->call([
+            ProvinceSeeder::class,
+            CitySeeder::class,
             RoleSeeder::class,
-            // Puedes agregar seeders para Carreras y Materias aquí
+            DegreeSeeder::class,
+            SubjectSeeder::class,
+            ComissionSeeder::class,
+            MidComissionSubjectSeeder::class,
+            AssignmentSeeder::class,
         ]);
     }
 }

@@ -50,13 +50,16 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
     // ! COMISIONES Y ASIGNACIONES
-    Route::get('/comission', [ComissionController::class, 'index']);
+    Route::middleware('role:administrador')->group(function () {
+        Route::post('/comission', [ComissionController::class, 'store']);
+        Route::put('/comission/{id}', [ComissionController::class, 'update']);
+        Route::delete('/comission/{id}', [ComissionController::class, 'destroy']);
+    });
+
+    Route::middleware('role:administrador|profesor|estudiante')->group(function () {
+        Route::get('/comission', [ComissionController::class, 'index']);
+    });
+
     Route::get('/comission-subject', [MidComissionSubjectController::class, 'index']);
     Route::get('/assignment', [AssignmentController::class, 'index']);
-
-    // ! PERSONAS / ROLES / UBICACIÓN
-    Route::get('/person', [PersonController::class, 'index']);
-    Route::get('/role', [RoleController::class, 'index']);
-    Route::get('/city', [CityController::class, 'index']);
-    Route::get('/province', [ProvinceController::class, 'index']);
 });

@@ -4,17 +4,25 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MidComissionSubject extends Model
 {
-    public function Subject(): HasMany
+    protected $table = 'mid_comissions_subjects';
+
+    protected $fillable = [
+        'comission_id',
+        'subject_id'
+    ];
+
+    public function Subject(): BelongsTo
     {
-        return $this->hasMany(Subject::class);
+        return $this->belongsTo(Subject::class);
     }
 
-    public function Comission(): HasMany
+    public function Comission(): BelongsTo
     {
-        return $this->hasMany(Comission::class);
+        return $this->belongsTo(Comission::class);
     }
 
     public function Assignment(): HasMany

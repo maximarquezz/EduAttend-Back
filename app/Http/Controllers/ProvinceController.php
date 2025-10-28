@@ -7,60 +7,102 @@ use Illuminate\Http\Request;
 
 class ProvinceController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $provinces = Province::all();
-        return response()->json($provinces);
+        try {
+            $provinces = Province::all();
+            if ($provinces->isEmpty()) {
+                return response()->json('Aún no hay provincias.');
+            } else {
+                return response()->json($provinces, 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Province).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        try {
+            $province = Province::create($request->all());
+
+            if (!$province) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (Province).'
+                ], 404);
+            } else {
+                return response()->json($province, 201);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Province).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Province $province)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Province $province)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Province $province)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $province = Province::find($id);
+
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (Province).',
+                ], 400);
+            } else if (!$province) {
+                return response()->json('El recurso solicitado no existe (Province).', 404);
+            } else {
+                $province->update($request->all());
+                return response()->json($province, 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Province).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Province $province)
+    public function destroy($id)
     {
-        //
+        try {
+            $province = Province::destroy($id);
+
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (Province).'
+                ], 400);
+            } else if (!$province) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (Province).'
+                ], 404);
+            } else {
+                return response()->json($province, 204);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Province).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

@@ -7,60 +7,102 @@ use Illuminate\Http\Request;
 
 class MidComissionSubjectController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $MidsComissionsSubjects = MidComissionSubject::all();
-        return response()->json($MidsComissionsSubjects);
+        try {
+            $midsComissionsSubjects = MidComissionSubject::all();
+            if ($midsComissionsSubjects->isEmpty()) {
+                return response()->json('Aún no hay relaciones comisión-materia.');
+            } else {
+                return response()->json($midsComissionsSubjects, 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (MidComissionSubject).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        try {
+            $midComissionSubject = MidComissionSubject::create($request->all());
+
+            if (!$midComissionSubject) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (MidComissionSubject).'
+                ], 404);
+            } else {
+                return response()->json($midComissionSubject, 201);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (MidComissionSubject).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(MidComissionSubject $MidComissionSubject)
+    public function show(MidComissionSubject $midComissionSubject)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(MidComissionSubject $MidComissionSubject)
+    public function edit(MidComissionSubject $midComissionSubject)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, MidComissionSubject $MidComissionSubject)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $midComissionSubject = MidComissionSubject::find($id);
+
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (MidComissionSubject).',
+                ], 400);
+            } else if (!$midComissionSubject) {
+                return response()->json('El recurso solicitado no existe (MidComissionSubject).', 404);
+            } else {
+                $midComissionSubject->update($request->all());
+                return response()->json($midComissionSubject, 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (MidComissionSubject).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(MidComissionSubject $MidComissionSubject)
+    public function destroy($id)
     {
-        //
+        try {
+            $midComissionSubject = MidComissionSubject::destroy($id);
+
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (MidComissionSubject).'
+                ], 400);
+            } else if (!$midComissionSubject) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (MidComissionSubject).'
+                ], 404);
+            } else {
+                return response()->json($midComissionSubject, 204);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (MidComissionSubject).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

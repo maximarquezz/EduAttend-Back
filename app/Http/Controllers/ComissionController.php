@@ -2,65 +2,108 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\comission;
+use App\Models\Comission;
 use Illuminate\Http\Request;
 
 class ComissionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $comissions = Comission::all();
-        return response()->json($comissions);
+        try {
+            $comissions = Comission::all();
+            if ($comissions->isEmpty()) {
+                return response()->json('Aún no hay comisiones.');
+            } else {
+                return response()->json($comissions, 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Comission).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        try {
+            $comission = Comission::create($request->all());
+
+            if (!$comission) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (Comission).'
+                ], 404);
+            } else {
+                return response()->json($comission, 201);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Comission).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(comission $comission)
     {
         //
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(comission $comission)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, comission $comission)
+    public function update(Request $request, $id)
     {
-        //
+        try {
+            $comission = Comission::find($id);
+
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (Comission).',
+                ], 400);
+            } else if (!$comission) {
+                return response()->json('El recurso solicitado no existe (Comission).', 404);
+            } else {
+                $comission->update($request->all());
+                $comission->save();
+                return response()->json($comission, 200);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Comission).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(comission $comission)
+    public function destroy($id)
     {
-        //
+        try {
+            $comission = Comission::destroy($id);
+
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (Comission).'
+                ], 400);
+            } else if (!$comission) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (Comission).'
+                ], 404);
+            } else {
+                return response()->json($comission, 204);
+            }
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Comission).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
