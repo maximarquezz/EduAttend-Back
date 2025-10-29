@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\EnrollmentController;
 use App\Http\Controllers\DegreeController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\ComissionController;
@@ -60,6 +61,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/comission', [ComissionController::class, 'index']);
     });
 
+
+    // ! INSCRIPCIONES
+    Route::middleware('role:estudiante')->group(function () {
+        Route::post('/enrollment', [EnrollmentController::class, 'store']);
+    });
+
+    Route::middleware('role:administrador')->group(function () {
+        Route::post('/enrollment', [EnrollmentController::class, 'store']);
+        Route::put('/enrollment/{id}', [EnrollmentController::class, 'update']);
+        Route::delete('/enrollment/{id}', [EnrollmentController::class, 'destroy']);
+    });
+
+    Route::middleware('role:administrador|profesor|estudiante')->group(function () {
+        Route::get('/enrollment', [EnrollmentController::class, 'index']);
+    });
+
+    // * PERSONALIZADOS (ver donde meterlos qsy)
     Route::get('/comission-subject', [MidComissionSubjectController::class, 'index']);
     Route::get('/assignment', [AssignmentController::class, 'index']);
 });

@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             ComissionSeeder::class,
             MidComissionSubjectSeeder::class,
             AssignmentSeeder::class,
+            EnrollmentSeeder::class,
         ]);
     }
 }

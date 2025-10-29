@@ -26,4 +26,9 @@ class Subject extends Model
     {
         return $this->hasMany(MidComissionSubject::class);
     }
+
+    public function Enrollments(): HasMany
+    {
+        return $this->hasMany(Enrollment::class);
+    }
 }

@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/maximarquezz/EduAttend-Back/compare/v1.0.0...v1.1.0) (2025-10-28)
+
+
+### Features
+
+* **seeders:** agrego todos los seeders ([bb27821](https://github.com/maximarquezz/EduAttend-Back/commit/bb2782124b1a7cdf82c0ddf12037c2b633227a87))
+
 # 1.0.0 (2025-10-27)
 
 
