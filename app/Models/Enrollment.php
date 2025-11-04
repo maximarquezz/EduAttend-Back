@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Enrollment extends Model
 {
@@ -11,7 +12,7 @@ class Enrollment extends Model
         'user_id',
         'subject_id',
         'enrollment_year',
-        'status'
+        'enrollment_status'
     ];
 
     public function User(): BelongsTo
@@ -22,5 +23,10 @@ class Enrollment extends Model
     public function Subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);
+    }
+
+    public function Attendances(): HasMany
+    {
+        return $this->hasMany(Attendance::class);
     }
 }

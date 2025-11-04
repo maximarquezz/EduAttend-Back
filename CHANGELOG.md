@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/maximarquezz/EduAttend-Back/compare/v1.1.0...v1.2.0) (2025-10-29)
+
+
+### Features
+
+* **enrollment:** agregar inscripciones ([22a7439](https://github.com/maximarquezz/EduAttend-Back/commit/22a743955220cdfe0e745566405af70767292ee0))
+
 # [1.1.0](https://github.com/maximarquezz/EduAttend-Back/compare/v1.0.0...v1.1.0) (2025-10-28)
 
 
