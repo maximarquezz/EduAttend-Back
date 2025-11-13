@@ -77,6 +77,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/enrollment', [EnrollmentController::class, 'index']);
     });
 
+    // ! USUARIOS
+    Route::middleware('role:administrador')->group(function () {
+        Route::get('/pending-users', [AuthController::class, 'pendingUsers']);
+    });
+
     // * PERSONALIZADOS (ver donde meterlos qsy)
     Route::get('/comission-subject', [MidComissionSubjectController::class, 'index']);
     Route::get('/assignment', [AssignmentController::class, 'index']);

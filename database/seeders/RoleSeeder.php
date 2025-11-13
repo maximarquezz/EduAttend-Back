@@ -31,7 +31,9 @@ class RoleSeeder extends Seeder
                 'phone' => '3435410439',
                 'dni' => '12345678',
                 'address' => 'San Martín 123',
-                'city_id' => 1
+                'province_name' => 'Entre Rios',
+                'city_name' => 'Nogoyá',
+                'is_acepted' => 1
             ]
         );
         $admin->assignRole('administrador');
@@ -45,7 +47,9 @@ class RoleSeeder extends Seeder
                 'dni' => '23456789',
                 'phone' => '3435410440',
                 'address' => 'Av. Belgrano 456',
-                'city_id' => 1
+                'province_name' => 'Entre Rios',
+                'city_name' => 'Nogoyá',
+                'is_acepted' => 1
             ]
         );
         $profesor->assignRole('profesor');
@@ -59,7 +63,9 @@ class RoleSeeder extends Seeder
                 'dni' => '34567890',
                 'phone' => '3435410441',
                 'address' => 'Calle Libertad 789',
-                'city_id' => 1
+                'province_name' => 'Entre Rios',
+                'city_name' => 'Nogoyá',
+                'is_acepted' => 1
             ]
         );
         $estudiante->assignRole('estudiante');

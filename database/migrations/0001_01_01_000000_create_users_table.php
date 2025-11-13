@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->string('dni')->unique();
             $table->string('address')->nullable();
-            $table->foreignId('city_id')->constrained()->nullable();
+            $table->string('province_name')->nullable();
+            $table->string('city_name')->nullable();
+            $table->boolean('is_acepted')->default(false);
             $table->rememberToken();
             $table->timestamps();
         });

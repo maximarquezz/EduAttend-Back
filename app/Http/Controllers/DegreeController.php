@@ -4,20 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Degree;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 use function PHPUnit\Framework\isInt;
 
 class DegreeController extends Controller
 {
-    public function index()
+    public function index(): JsonResponse
     {
         try {
             $degrees = Degree::all();
             if ($degrees->isEmpty()) {
                 return response()->json('Aún no hay carreras.');
-            } else {
-                return response()->json($degrees, 200);
             }
+            return response()->json($degrees, 200);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error interno del servidor (Degree).',
@@ -31,18 +32,23 @@ class DegreeController extends Controller
         //
     }
 
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
         try {
-            $degree = Degree::create($request->all());
+            $validated = $request->validate([
+                'degree_name' => 'required|string|max:255'
+            ]);
 
-            if (!$degree) {
-                return response()->json([
-                    'error' => 'El recurso solicitado no existe (Degree).'
-                ], 404);
-            } else {
-                return response()->json($degree, 201);
-            }
+            $degree = Degree::create($validated);
+
+            return response()->json($degree, 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                    'error' => 'Datos de validación incorrectos.',
+                    'details' => $e->errors()
+                ], 422);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error interno del servidor (Degree).',
@@ -61,22 +67,37 @@ class DegreeController extends Controller
         //
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         try {
-            $degree = Degree::find($id);
-
             if (!is_numeric($id)) {
                 return response()->json([
                     'error' => 'La solicitud contiene errores (Degree).',
                 ], 400);
-            } else if (!$degree) {
-                return response()->json('El recurso solicitado no existe (Degree).', 404);
-            } else {
-                $degree->degree_name = $request->degree_name;
-                $degree->save();
-                return response()->json($degree, 200);
             }
+
+            $validated = $request->validate([
+                'degree_name' => 'required|string|max:255'
+            ]);
+
+            $degree = Degree::find($id);
+
+            if (!$degree) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (Degree).'
+                ], 404);
+            }
+
+            $degree->update($validated);
+
+            return response()->json($degree, 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Datos de validación incorrectos.',
+                'details' => $e->errors()
+            ], 422);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error interno del servidor (Degree).',
@@ -85,22 +106,27 @@ class DegreeController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         try {
-            $degree = Degree::destroy($id);
-
             if (!is_numeric($id)) {
                 return response()->json([
                     'error' => 'La solicitud contiene errores (Degree).'
                 ], 400);
-            } else if (!$degree) {
+            }
+
+            $degree = Degree::find($id);
+
+            if (!$degree) {
                 return response()->json([
                     'error' => 'El recurso solicitado no existe (Degree).'
                 ], 404);
-            } else {
-                return response()->json($degree, 204);
             }
+
+            $degree->delete();
+
+            return response()->json(null, 204);
+
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error interno del servidor (Degree).',
