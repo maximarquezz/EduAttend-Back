@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -7,7 +6,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Assignment extends Model
 {
-
     protected $fillable = [
         'user_id',
         'mid_comissions_subjects_id',
@@ -21,6 +19,6 @@ class Assignment extends Model
 
     public function MidComissionSubject(): BelongsTo
     {
-        return $this->belongsTo(MidComissionSubject::class);
+        return $this->belongsTo(MidComissionSubject::class, 'mid_comissions_subjects_id');
     }
 }

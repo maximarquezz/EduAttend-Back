@@ -10,7 +10,7 @@ class Enrollment extends Model
 {
     protected $fillable = [
         'user_id',
-        'subject_id',
+        'mid_comission_subject_id',
         'enrollment_year',
         'enrollment_status'
     ];
@@ -20,9 +20,9 @@ class Enrollment extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function Subject(): BelongsTo
+    public function MidComissionSubject(): BelongsTo
     {
-        return $this->belongsTo(Subject::class);
+        return $this->belongsTo(MidComissionSubject::class);
     }
 
     public function Attendances(): HasMany

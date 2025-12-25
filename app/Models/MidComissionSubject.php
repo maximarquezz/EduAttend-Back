@@ -15,6 +15,11 @@ class MidComissionSubject extends Model
         'subject_id'
     ];
 
+    public function Enrollment(): BelongsTo
+    {
+        return $this->belongsTo(Enrollment::class);
+    }
+
     public function Subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);

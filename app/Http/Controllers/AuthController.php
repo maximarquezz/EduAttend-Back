@@ -6,7 +6,10 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
+use App\Mail\PasswordResetCodeMail;
 
 class AuthController extends Controller
 {
@@ -103,6 +106,47 @@ class AuthController extends Controller
         }
     }
 
+        public function update(Request $request, $id)
+    {
+        try {
+            if (!is_numeric($id)) {
+                return response()->json([
+                    'error' => 'La solicitud contiene errores (User).'
+                ], 400);
+            }
+
+            $user = User::find($id);
+
+            if (!$user) {
+                return response()->json([
+                    'error' => 'El recurso solicitado no existe (User).'
+                ], 404);
+            }
+
+            $validated = $request->validate([
+                'is_acepted' => 'sometimes|boolean',
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:users,email,' . $id,
+                'phone' => 'sometimes|string',
+                'address' => 'sometimes|string',
+            ]);
+
+            $user->update($validated);
+            return response()->json($user, 200);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'Datos inválidos.',
+                'details' => $e->errors()
+            ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (User).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function pendingUsers(){
         try {
             $users = User::where('is_acepted', 0)->get();
@@ -116,5 +160,85 @@ class AuthController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+        
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['error' => 'Email no encontrado'], 404);
+        }
+        
+        $code = rand(100000, 999999); // 6 dígitos
+        
+        DB::table('password_resets')->updateOrInsert(
+            ['email' => $request->email],
+            ['code' => $code, 'created_at' => now()]
+        );
+        
+        Mail::to($request->email)->send(new PasswordResetCodeMail($code));
+        
+        return response()->json(['message' => 'Código enviado al email']);
+    }
+
+    public function verifyCode(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|size:6'
+        ]);
+        
+        $reset = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->where('code', $request->code)
+            ->first();
+        
+        if (!$reset || now()->diffInMinutes($reset->created_at) > 10) {
+            return response()->json(['error' => 'Código inválido o expirado'], 400);
+        }
+        
+        return response()->json(['message' => 'Código válido']);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required|size:6',
+            'password' => 'required|min:6|confirmed'
+        ]);
+        
+        $reset = DB::table('password_resets')
+            ->where('email', $request->email)
+            ->where('code', $request->code)
+            ->first();
+        
+        if (!$reset || now()->diffInMinutes($reset->created_at) > 10) {
+            return response()->json(['error' => 'Código inválido o expirado'], 400);
+        }
+        
+        $user = User::where('email', $request->email)->first();
+        $user->password = Hash::make($request->password);
+        $user->save();
+        
+        DB::table('password_resets')->where('email', $request->email)->delete();
+        
+        return response()->json(['message' => 'Contraseña actualizada']);
+    }
+
+    public function getUserByDni($dni)
+    {
+        $user = User::where('dni', $dni)->first();
+        
+        if (!$user) {
+            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        }
+        
+        return response()->json([
+            'email' => $user->email,
+            'name' => $user->name
+        ]);
     }
 }

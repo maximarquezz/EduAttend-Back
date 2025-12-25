@@ -30,7 +30,8 @@ class User extends Authenticatable
         'dni',
         'address',
         'province_name',
-        'city_name'
+        'city_name',
+        'is_acepted'
     ];
 
     /**
@@ -54,11 +55,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
-    }
-
-    public function City(): BelongsTo
-    {
-        return $this->belongsTo(City::class);
     }
 
     public function Assignments(): HasMany

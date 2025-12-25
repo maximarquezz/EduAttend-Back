@@ -11,16 +11,6 @@ class DegreeSeeder extends Seeder
     {
         Degree::insert([
             [
-                'degree_name' => 'Tecnicatura Superior en Análisis y Desarrollo de Software',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'degree_name' => 'Tecnicatura Superior en Enfermería',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
                 'degree_name' => 'Profesorado de Educación Primaria',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -45,8 +35,16 @@ class DegreeSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'degree_name' => 'Tecnicatura Superior en Análisis y Desarrollo de Software',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'degree_name' => 'Tecnicatura Superior en Enfermería',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
-
-        $this->command->info('Carreras creadas exitosamente!');
     }
 }

@@ -10,7 +10,7 @@ class MidComissionSubjectController extends Controller
     public function index()
     {
         try {
-            $midsComissionsSubjects = MidComissionSubject::all();
+            $midsComissionsSubjects = MidComissionSubject::with(['subject', 'comission'])->get();
             if ($midsComissionsSubjects->isEmpty()) {
                 return response()->json('Aún no hay relaciones comisión-materia.');
             } else {
