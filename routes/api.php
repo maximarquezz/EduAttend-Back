@@ -138,6 +138,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
         Route::get('/attendances/my-classes', [AttendanceController::class, 'getClassesByProfessor']);
         Route::get('/attendances/teacher/my-courses', [AttendanceController::class, 'getTeacherAttendances']);
+        Route::post('/attendances/bulk', [AttendanceController::class, 'storeBulk']);
     });
 
     // ADMINISTRADORES: Gestión completa de asistencias

@@ -462,4 +462,52 @@ class AttendanceController extends Controller
         }
     }
 
+    public function storeBulk(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'attendances' => 'required|array|min:1',
+                'attendances.*.enrollment_id' => 'required|integer|exists:enrollments,id',
+                'attendances.*.attendance_date' => 'required|date',
+                'attendances.*.attendance_status' => 'required|in:PRESENTE,AUSENTE,TARDE,JUSTIFICADO',
+                'attendances.*.attendance_notes' => 'nullable|string'
+            ]);
+
+            $results = [];
+            $errors = [];
+
+            foreach ($validated['attendances'] as $attendanceData) {
+                // Verificar duplicados
+                $exists = Attendance::where('enrollment_id', $attendanceData['enrollment_id'])
+                    ->where('attendance_date', $attendanceData['attendance_date'])
+                    ->first();
+
+                if ($exists) {
+                    $errors[] = "Ya existe asistencia para enrollment_id {$attendanceData['enrollment_id']} en esta fecha";
+                    continue;
+                }
+
+                $attendance = Attendance::create($attendanceData);
+                $results[] = $attendance;
+            }
+
+            return response()->json([
+                'message' => 'Asistencias registradas',
+                'created' => $results,
+                'errors' => $errors
+            ], 201);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'error' => 'Datos inválidos.',
+                'details' => $e->errors()
+            ], 422);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }
