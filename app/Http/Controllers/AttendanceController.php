@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Attendance;
+use App\Models\Assignment;
 use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -331,6 +332,131 @@ class AttendanceController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error interno del servidor (Attendance resume by student).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getClassesByProfessor(Request $request)
+    {
+        try {
+            $professorId = $request->user()->id;
+            
+            $assignments = Assignment::where('user_id', $professorId)
+                ->where('assign_type', 'DICTA')
+                ->pluck('mid_comissions_subjects_id');
+            
+            if ($assignments->isEmpty()) {
+                return response()->json([
+                    'message' => 'No tienes materias asignadas.',
+                    'data' => []
+                ], 200);
+            }
+            
+            $classes = Attendance::with([
+                'enrollment.midComissionSubject.subject',
+                'enrollment.midComissionSubject.comission'
+            ])
+                ->whereHas('enrollment', function($q) use ($assignments) {
+                    $q->whereIn('mid_comission_subject_id', $assignments);
+                })
+                ->selectRaw('DATE(attendance_date) as date, enrollment.mid_comission_subject_id')
+                ->join('enrollments as enrollment', 'attendances.enrollment_id', '=', 'enrollment.id')
+                ->groupBy('date', 'enrollment.mid_comission_subject_id')
+                ->orderBy('date', 'desc')
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'date' => $item->date,
+                        'mid_comission_subject_id' => $item->mid_comission_subject_id,
+                        'subject' => $item->enrollment->midComissionSubject->subject,
+                        'comission' => $item->enrollment->midComissionSubject->comission
+                    ];
+                });
+            
+            return response()->json($classes, 200);
+            
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Attendance).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getTeacherAttendances(Request $request)
+    {
+        try {
+            $userId = $request->user()->id;
+            
+            $assignments = Assignment::where('user_id', $userId)
+                ->where('assign_type', 'DICTA')
+                ->with('MidComissionSubject.Subject', 'MidComissionSubject.Comission')
+                ->get();
+            
+            if ($assignments->isEmpty()) {
+                return response()->json([
+                    'message' => 'No tienes materias asignadas.',
+                    'data' => []
+                ], 200);
+            }
+            
+            $result = [];
+            
+            foreach ($assignments as $assignment) {
+                $midComissionSubject = $assignment->MidComissionSubject;
+                $subject = $midComissionSubject->Subject;
+                $comission = $midComissionSubject->Comission;
+                
+                // Agrupar asistencias por fecha
+                $attendancesByDate = Attendance::whereHas('Enrollment', function($query) use ($midComissionSubject) {
+                        $query->where('mid_comission_subject_id', $midComissionSubject->id);
+                    })
+                    ->with(['Enrollment.User'])
+                    ->orderBy('attendance_date', 'desc')
+                    ->get()
+                    ->groupBy(function($attendance) {
+                        return $attendance->attendance_date->format('Y-m-d');
+                    })
+                    ->map(function($attendancesOnDate, $date) {
+                        return [
+                            'attendance_date' => $date,
+                            'students' => $attendancesOnDate->map(function($attendance) {
+                                return [
+                                    'student_id' => $attendance->Enrollment->User->id,
+                                    'student_name' => $attendance->Enrollment->User->name,
+                                    'attendance_status' => $attendance->attendance_status,
+                                    'attendance_notes' => $attendance->notes
+                                ];
+                            })->values()
+                        ];
+                    })
+                    ->values();
+                
+                if ($attendancesByDate->isNotEmpty()) {
+                    $result[] = [
+                        'subject_id' => $subject->id,
+                        'subject_name' => $subject->subject_name,
+                        'comission_id' => $comission->id,
+                        'comission_name' => $comission->comission_name,
+                        'mid_comission_subject_id' => $midComissionSubject->id,
+                        'attendances' => $attendancesByDate
+                    ];
+                }
+            }
+            
+            if (empty($result)) {
+                return response()->json([
+                    'message' => 'No hay asistencias registradas en tus materias.',
+                    'data' => []
+                ], 200);
+            }
+            
+            return response()->json($result, 200);
+            
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Teacher Attendances).',
                 'message' => $e->getMessage()
             ], 500);
         }
