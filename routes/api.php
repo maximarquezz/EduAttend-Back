@@ -135,9 +135,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // PROFESORES: Registrar y gestionar asistencias de sus comisiones
     Route::middleware('role:profesor')->group(function () {
         Route::post('/attendances', [AttendanceController::class, 'store']);
-        Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
         Route::get('/attendances/my-classes', [AttendanceController::class, 'getClassesByProfessor']);
         Route::get('/attendances/teacher/my-courses', [AttendanceController::class, 'getTeacherAttendances']);
+        Route::get('/my-comission-subject/{midComissionSubjectId}/enrollments', [AttendanceController::class, 'getEnrollmentsByComissionSubject']);
         Route::post('/attendances/bulk', [AttendanceController::class, 'storeBulk']);
     });
 
@@ -145,16 +145,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:administrador')->group(function () {
         Route::get('/attendances', [AttendanceController::class, 'index']);
         Route::post('/attendances', [AttendanceController::class, 'store']);
+    });
+
+    // PROFESORES Y ADMINISTRADORES: Eliminar asistencias
+    Route::middleware('role:profesor|administrador')->group(function () {
         Route::put('/attendances/{id}', [AttendanceController::class, 'update']);
         Route::delete('/attendances/{id}', [AttendanceController::class, 'destroy']);
     });
 
-    // TODOS LOS ROLES: Ver asistencias por inscripción
+    // TODOS LOS ROLES
     Route::middleware('role:estudiante|profesor|administrador')->group(function () {
         Route::get('/attendances/enrollment/{enrollmentId}', [AttendanceController::class, 'getByEnrollment']);
         Route::get('/attendances/recent', [AttendanceController::class, 'recent']);
         Route::get('/attendances/resume-per-subject/enrollment/{enrollmentId}', [AttendanceController::class, 'resumePerSubject']);
         Route::get('/attendances/resume-per-subject/student/{studentId}', [AttendanceController::class, 'resumePerSubjectByStudent']);
+        Route::get('/attendances/subjects-at-risk/{studentId}', [AttendanceController::class, 'subjectsAtRisk']);
     });
 
     // ! ============================================

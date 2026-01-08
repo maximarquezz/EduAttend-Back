@@ -11,11 +11,11 @@ class Attendance extends Model
         'enrollment_id',
         'attendance_date',
         'attendance_status',
-        'notes'
+        'attendance_notes'
     ];
 
     protected $casts = [
-        'attendance_date' => 'date',
+        'attendance_date' => 'datetime',
     ];
 
     public function Enrollment(): BelongsTo

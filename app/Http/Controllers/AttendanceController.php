@@ -423,10 +423,11 @@ class AttendanceController extends Controller
                             'attendance_date' => $date,
                             'students' => $attendancesOnDate->map(function($attendance) {
                                 return [
+                                    'id' => $attendance->id,  // 👈 ESTA LÍNEA FALTA
                                     'student_id' => $attendance->Enrollment->User->id,
                                     'student_name' => $attendance->Enrollment->User->name,
                                     'attendance_status' => $attendance->attendance_status,
-                                    'attendance_notes' => $attendance->notes
+                                    'attendance_notes' => $attendance->attendance_notes
                                 ];
                             })->values()
                         ];
@@ -457,6 +458,37 @@ class AttendanceController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error interno del servidor (Teacher Attendances).',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getEnrollmentsByComissionSubject($midComissionSubjectId)
+    {
+        try {
+            if (!is_numeric($midComissionSubjectId)) {
+                return response()->json([
+                    'error' => 'El ID debe ser numérico.'
+                ], 400);
+            }
+
+            $enrollments = Enrollment::with('user')
+                ->where('mid_comission_subject_id', $midComissionSubjectId)
+                ->where('enrollment_status', 'ACTIVO')
+                ->get();
+
+            if ($enrollments->isEmpty()) {
+                return response()->json([
+                    'message' => 'No hay estudiantes inscritos en esta comisión-materia.',
+                    'data' => []
+                ], 200);
+            }
+
+            return response()->json($enrollments, 200);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor.',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -505,6 +537,110 @@ class AttendanceController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => 'Error interno del servidor.',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function subjectsAtRisk($studentId)
+    {
+        try {
+            if (!is_numeric($studentId)) {
+                return response()->json([
+                    'error' => 'El ID del estudiante debe ser numérico.'
+                ], 400);
+            }
+
+            $enrollments = Enrollment::with('midComissionSubject.subject')
+                ->where('user_id', $studentId)
+                ->where('enrollment_status', 'ACTIVO')
+                ->get();
+
+            if ($enrollments->isEmpty()) {
+                return response()->json([
+                    'message' => 'El estudiante no tiene inscripciones activas.',
+                    'data' => []
+                ], 200);
+            }
+
+            $result = [];
+            $totalSubjects = 0;
+            $atRiskCount = 0;
+            $criticalCount = 0;
+
+            foreach ($enrollments as $enrollment) {
+                $attendances = Attendance::where('enrollment_id', $enrollment->id)->get();
+
+                if ($attendances->isEmpty()) {
+                    continue;
+                }
+
+                $totalSubjects++;
+                $total = $attendances->count();
+                $presentes = $attendances->where('attendance_status', 'PRESENTE')->count();
+                $tarde = $attendances->where('attendance_status', 'TARDE')->count();
+                $ausentes = $attendances->where('attendance_status', 'AUSENTE')->count();
+                $justificados = $attendances->where('attendance_status', 'JUSTIFICADO')->count();
+
+                $asistenciasValidas = $presentes + $tarde;
+                $porcentaje = round(($asistenciasValidas / $total) * 100, 2);
+
+                // Determinar status
+                if ($porcentaje < 60) {
+                    $status = 'CRITICO';
+                    $criticalCount++;
+                } elseif ($porcentaje < 75) {
+                    $status = 'EN_RIESGO';
+                    $atRiskCount++;
+                } else {
+                    $status = 'ESTABLE';
+                }
+
+                // Calcular clases mínimas restantes para alcanzar 75%
+                $clasesNecesarias = ceil((0.75 * $total) - $asistenciasValidas);
+                $clasesRestantesMinimas = max(0, $clasesNecesarias);
+
+                $subject = $enrollment->midComissionSubject->subject;
+                $comission = $enrollment->midComissionSubject->comission;
+
+                $subjectData = [
+                    'subject_id' => $subject->id,
+                    'subject_name' => $subject->subject_name,
+                    'comission_name' => $comission->comission_name,
+                    'total_classes' => $total,
+                    'presentes' => $presentes,
+                    'tarde' => $tarde,
+                    'ausentes' => $ausentes,
+                    'justificados' => $justificados,
+                    'asistencias_validas' => $asistenciasValidas,
+                    'porcentaje' => $porcentaje,
+                    'status' => $status,
+                    'clases_restantes_minimas' => $clasesRestantesMinimas
+                ];
+
+                // Solo incluir materias en riesgo o críticas
+                if ($status !== 'ESTABLE') {
+                    $result[] = $subjectData;
+                }
+            }
+
+            // Ordenar por porcentaje ascendente (las más críticas primero)
+            usort($result, function($a, $b) {
+                return $a['porcentaje'] <=> $b['porcentaje'];
+            });
+
+            return response()->json([
+                'summary' => [
+                    'total_subjects' => $totalSubjects,
+                    'at_risk' => $atRiskCount,
+                    'critical' => $criticalCount
+                ],
+                'subjects' => $result
+            ], 200);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Error interno del servidor (Attendance risk analysis).',
                 'message' => $e->getMessage()
             ], 500);
         }
